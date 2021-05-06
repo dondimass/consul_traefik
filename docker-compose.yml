@@ -11,7 +11,6 @@ x-logger: &logger
 x-networks: &networks
     networks:
       - service_net
-      - sync_net
 
 x-deploy: &deploy-resources
       resources:
@@ -73,6 +72,44 @@ networks:
   service_net:
     name: service_net
     external: true
-  sync_net:
-    name: sync_net
+
+
+
+
+x-service-consul: &service-consul
+  consul:
+    image: wms-sklad-ng.dp.wb.ru:4567/devops/deployment/consul:latest
+    command:
+      - "agent"
+      - "-datacenter=wms-consul-production"
+      - "-node=consul-01.fd.whs.wb.ru"
+      - "-encrypt=NATIr1EC8CvBEHp4FYTAnFvRKCm4DB2uCpzXTgZBA14="
+      - "-client=0.0.0.0"
+      - "-advertise=10.156.2.80"
+#      - "-token=195bc79a-b544-ced9-248f-16f1b0361052"
+      - "-retry-join="
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+    <<: *logger
+    <<: *networks
+    ports:
+      - "8300:8300"
+      - "8301:8301/tcp"
+      - "8301:8301/udp"
+      - "8302:8302/tcp"
+      - "8302:8302/udp"
+      - "8500:8500"
+      - "8502:8502"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
+    volumes:
+      - /srv/data/consul:/consul/config
+services:
+        <<: *service-consul
+
+networks:
+  service_net:
+    name: service_net
     external: true
