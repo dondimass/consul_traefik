@@ -1,0 +1,78 @@
+version: "3.7"
+
+x-logger: &logger
+    logging:
+      #driver: none
+      driver: json-file
+      options:
+        max-size: "10M"
+        max-file: "3"
+
+x-networks: &networks
+    networks:
+      - service_net
+      - sync_net
+
+x-deploy: &deploy-resources
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 200M
+
+x-service-traefik: &service-traefik
+  traefik:
+    image: "wms-sklad-ng.dp.wb.ru:4567/devops/deployment/traefik:v2.4.2"
+    command:
+     --providers.file.directory=/configs
+     --providers.file.watch=true
+     --providers.docker=true
+     --providers.docker.endpoint=unix:///var/run/docker.sock
+     --providers.docker.swarmmode=true
+     --providers.docker.exposedbydefault=false
+     --providers.docker.network=service_net
+     --entrypoints.http.address=:80
+     --api.insecure=true
+     --api.dashboard=true
+     --api=true
+     --accesslog=true
+     --accesslog.filters.statuscodes=200-510
+#     --metrics.influxdb=true
+#     --metrics.influxdb.address=wms-grafana.dl.wb.ru:8086
+#     --metrics.influxdb.protocol=http
+#     --metrics.influxdb.database=wb-prod
+#     --metrics.influxdb.username=wb-prod
+#     --metrics.influxdb.password=wb-prod
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
+#      - "traefik.http.routers.traefik.middlewares=auth"
+#      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$R39tYfQE$$nNpA0M.99fdAQES44qP4I/"
+#      placement:
+#        constraints:
+#          - node.labels.node == 1
+      restart_policy:
+        condition: on-failure
+      <<: *deploy-resources
+    <<: *logger
+    <<: *networks
+    ports:
+      - "80:80"
+      - "8090:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/data/traefik:/configs:ro
+services:
+
+  <<: *service-traefik
+
+networks:
+  service_net:
+    name: service_net
+    external: true
+  sync_net:
+    name: sync_net
+    external: true
