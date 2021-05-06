@@ -64,17 +64,6 @@ x-service-traefik: &service-traefik
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /srv/data/traefik:/configs:ro
-services:
-
-  <<: *service-traefik
-
-networks:
-  service_net:
-    name: service_net
-    external: true
-
-
-
 
 x-service-consul: &service-consul
   consul:
@@ -106,8 +95,10 @@ x-service-consul: &service-consul
       - "8600:8600/udp"
     volumes:
       - /srv/data/consul:/consul/config
+
 services:
-        <<: *service-consul
+    <<: *service-consul
+    <<: *service-traefik
 
 networks:
   service_net:
