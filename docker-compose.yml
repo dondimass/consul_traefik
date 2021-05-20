@@ -37,12 +37,6 @@ x-service-traefik: &service-traefik
      --api=true
      --accesslog=true
      --accesslog.filters.statuscodes=200-510
-#     --metrics.influxdb=true
-#     --metrics.influxdb.address=wms-grafana.dl.wb.ru:8086
-#     --metrics.influxdb.protocol=http
-#     --metrics.influxdb.database=wb-prod
-#     --metrics.influxdb.username=wb-prod
-#     --metrics.influxdb.password=wb-prod
     deploy:
       mode: replicated
       replicas: 1
@@ -50,11 +44,6 @@ x-service-traefik: &service-traefik
         - "traefik.enable=true"
         - "traefik.http.routers.dashboard.service=api@internal"
         - "traefik.http.services.dummy-svc.loadbalancer.server.port=9999"
-#      - "traefik.http.routers.traefik.middlewares=auth"
-#      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$R39tYfQE$$nNpA0M.99fdAQES44qP4I/"
-#      placement:
-#        constraints:
-#          - node.labels.node == 1
       restart_policy:
         condition: on-failure
       <<: *deploy-resources
@@ -77,7 +66,6 @@ x-service-consul: &service-consul
       - "-encrypt=NATIr1EC8CvBEHp4FYTAnFvRKCm4DB2uCpzXTgZBA14="
       - "-client=0.0.0.0"
       - "-advertise=10.156.2.80"
-#      - "-token=195bc79a-b544-ced9-248f-16f1b0361052"
       - "-retry-join=wms-consul01.dp.wb.ru"
       - "-retry-join=wms-consul02.dl.wb.ru"
       - "-retry-join=wms-consul03.3d.wb.ru"
