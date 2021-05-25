@@ -1,0 +1,17 @@
+{
+    "service": 
+  
+    {
+      "name": "Имя сервиса",
+      "tags": ["ОбразСервиса"],
+          "check": {
+            "id": "api",
+            "name": "Ping",
+            "http": "http://Стэк_ИмяСервиса:8080/api/ping",
+            "tls_skip_verify": false,
+            "method": "GET",
+            "interval": "10s",
+            "timeout": "1s"
+          }
+    }
+}
